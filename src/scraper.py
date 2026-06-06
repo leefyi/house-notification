@@ -112,10 +112,10 @@ def save_cache(cache):
 
 
 def send_notification(title, body, push_key, url=None):
-    text = f"{title}\n{body}"
+    text = f"## {title}\n\n{body}"
     if url:
-        text += f"\n{url}"
-    payload = {"pushkey": push_key, "text": text, "type": "text"}
+        text += f"\n\n[点击查看原文]({url})"
+    payload = {"pushkey": push_key, "text": text, "type": "markdown"}
     data = urllib.parse.urlencode(payload).encode()
     req = urllib.request.Request(
         PUSH_DEER_URL, data=data,
