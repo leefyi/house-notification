@@ -112,12 +112,16 @@ def save_cache(cache):
 
 
 def send_bark(title, body, device_key, url=None):
-    params = {"title": title, "body": body}
+    payload = {"title": title, "body": body, "device_key": device_key}
     if url:
-        params["url"] = url
-    query = urllib.parse.urlencode(params)
-    bark_url = f"{BARK_SERVER}/{device_key}?{query}"
-    req = urllib.request.Request(bark_url, method="GET")
+        payload["url"] = url
+    data = json.dumps(payload).encode()
+    bark_url = f"{BARK_SERVER}/push"
+    req = urllib.request.Request(
+        bark_url, data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
     with urllib.request.urlopen(req, timeout=10, context=_ssl_context()) as resp:
         return json.loads(resp.read().decode())
 
