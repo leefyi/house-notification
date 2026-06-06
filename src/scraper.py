@@ -10,7 +10,7 @@ from datetime import datetime, timezone, timedelta
 TARGET_URL = "https://zjj.sz.gov.cn/ztfw/zfbz/tzgg2017/"
 PAGES_TO_CHECK = 3
 KEYWORDS = ["保租房", "公租房", "认租", "保障性租赁住房", "公共租赁住房", "配租"]
-BARK_SERVER = "https://api.day.app"
+PUSH_DEER_URL = "https://api2.pushdeer.com/message/push"
 CACHE_FILE = ".cache/seen_urls.json"
 
 CST = timezone(timedelta(hours=8))
@@ -111,15 +111,15 @@ def save_cache(cache):
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
 
-def send_bark(title, body, device_key, url=None):
-    payload = {"title": title, "body": body}
+def send_notification(title, body, push_key, url=None):
+    text = f"{title}\n{body}"
     if url:
-        payload["url"] = url
-    data = json.dumps(payload).encode()
-    bark_url = f"{BARK_SERVER}/{device_key}"
+        text += f"\n{url}"
+    payload = {"pushkey": push_key, "text": text, "type": "text"}
+    data = urllib.parse.urlencode(payload).encode()
     req = urllib.request.Request(
-        bark_url, data=data,
-        headers={"Content-Type": "application/json"},
+        PUSH_DEER_URL, data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=10, context=_ssl_context()) as resp:
@@ -133,9 +133,9 @@ def _page_url(page_num):
 
 
 def main():
-    device_key = os.environ.get("BARK_DEVICE_KEY")
-    if not device_key:
-        print("Error: BARK_DEVICE_KEY not set")
+    push_key = os.environ.get("PUSH_DEER_KEY")
+    if not push_key:
+        print("Error: PUSH_DEER_KEY not set")
         sys.exit(1)
 
     all_announcements = []
@@ -151,7 +151,7 @@ def main():
             error_msg = f"网站抓取失败 (page {page}): {e}"
             print(error_msg)
             if page == 1:
-                send_bark("⚠️ 住房监控异常", error_msg, device_key)
+                send_notification("⚠️ 住房监控异常", error_msg, push_key)
                 sys.exit(1)
 
     print(f"Total: {len(all_announcements)} announcements")
@@ -172,13 +172,13 @@ def main():
             if ann.get("date"):
                 body += f"\n{ann['date']}"
             print(f"  -> Sending: {ann['title']}")
-            send_bark(title, body, device_key, url=ann["url"])
+            send_notification(title, body, push_key, url=ann["url"])
     else:
         now = datetime.now(CST)
-        send_bark(
+        send_notification(
             "✅ 住房监控正常",
             f"检查完毕，暂无新公告\n{now.strftime('%H:%M')}",
-            device_key,
+            push_key,
         )
         print("No new announcements, sent confirmation")
 

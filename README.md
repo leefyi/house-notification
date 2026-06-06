@@ -1,6 +1,6 @@
 # house-notification
 
-深圳保租房/公租房公告监控。每日自动检查深圳市住建局网站新公告，通过 Bark 推送到 iPhone。
+深圳保租房/公租房公告监控。每日自动检查深圳市住建局网站新公告，通过 PushDeer 推送到 iPhone。
 
 ## 工作原理
 
@@ -14,9 +14,9 @@
 
 ### 1. Fork 或 clone 本项目
 
-### 2. 安装 Bark
+### 2. 安装 PushDeer
 
-iPhone 在 App Store 搜索 "Bark" 安装，打开后复制 device key。
+iPhone 在 App Store 搜索 "PushDeer" 安装，注册后复制 Push Key。
 
 ### 3. 配置 Secret
 
@@ -24,7 +24,7 @@ iPhone 在 App Store 搜索 "Bark" 安装，打开后复制 device key。
 
 | Secret | 值 |
 |--------|-----|
-| `BARK_DEVICE_KEY` | 你的 Bark device key |
+| `PUSH_DEER_KEY` | 你的 PushDeer Push Key |
 
 ### 4. 启用 Actions
 
