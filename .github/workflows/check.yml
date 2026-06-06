@@ -1,0 +1,31 @@
+name: House Notification Check
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 09:00 CST
+    - cron: '0 5 * * *'   # 13:00 CST
+    - cron: '0 9 * * *'   # 17:00 CST
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: seen-urls-${{ github.run_id }}
+          restore-keys: seen-urls-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run scraper
+        env:
+          BARK_DEVICE_KEY: ${{ secrets.BARK_DEVICE_KEY }}
+        run: python src/scraper.py
