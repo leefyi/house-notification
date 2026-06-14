@@ -9,11 +9,23 @@ from datetime import datetime, timezone, timedelta
 
 TARGET_URL = "https://zjj.sz.gov.cn/ztfw/zfbz/tzgg2017/"
 PAGES_TO_CHECK = 3
-KEYWORDS = ["保租房", "公租房", "认租", "保障性租赁住房", "公共租赁住房", "配租"]
+KEYWORDS = ["保租房", "公租房", "认租", "保障性租赁住房", "公共租赁住房", "配租", "配售", "保障性住房"]
 PUSH_DEER_URL = "https://api2.pushdeer.com/message/push"
 CACHE_FILE = ".cache/seen_urls.json"
 
+DISTRICTS = [
+    "南山", "福田", "罗湖", "盐田", "宝安", "龙岗", "龙华", "坪山", "光明", "大鹏",
+    "前海", "深圳", "全市", "市级",
+]
+
 CST = timezone(timedelta(hours=8))
+
+
+def extract_location(title):
+    for d in DISTRICTS:
+        if d in title:
+            return d
+    return None
 
 
 class AnnouncementParser(HTMLParser):
@@ -167,7 +179,9 @@ def main():
 
     if new_announcements:
         for ann in new_announcements:
-            title = "🏠 保租房/公租房新公告"
+            loc = extract_location(ann["title"])
+            loc_tag = f"【{loc}】" if loc else ""
+            title = f"🏠 {loc_tag}住房保障新公告"
             body = ann["title"]
             if ann.get("date"):
                 body += f"\n{ann['date']}"
