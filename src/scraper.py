@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 import ssl
 import urllib.request
 import urllib.parse
@@ -26,6 +27,17 @@ def extract_location(title):
         if d in title:
             return d
     return None
+
+
+COMMUNITY_RE = re.compile(
+    r"(?:南山|福田|罗湖|盐田|宝安|龙岗|龙华|坪山|光明|大鹏|前海)"
+    r"([\u4e00-\u9fff]{2,10}(?:苑|花园|小区|公寓|城|居|庭|阁|园))"
+)
+
+
+def extract_community(title):
+    m = COMMUNITY_RE.search(title)
+    return m.group(1) if m else None
 
 
 class AnnouncementParser(HTMLParser):
@@ -180,8 +192,14 @@ def main():
     if new_announcements:
         for ann in new_announcements:
             loc = extract_location(ann["title"])
-            loc_tag = f"【{loc}】" if loc else ""
-            title = f"🏠 {loc_tag}住房保障新公告"
+            community = extract_community(ann["title"])
+            parts = []
+            if loc:
+                parts.append(loc)
+            if community:
+                parts.append(community)
+            tag = "【" + "·".join(parts) + "】" if parts else ""
+            title = f"🏠 {tag}住房保障新公告"
             body = ann["title"]
             if ann.get("date"):
                 body += f"\n{ann['date']}"
