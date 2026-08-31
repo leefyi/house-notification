@@ -27,8 +27,10 @@ jobs:
 
       - name: Commit seen_urls cache
         run: |
+          set -x
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote -v
           git pull origin main --rebase
           git add .cache/seen_urls.json
           git diff --cached --quiet || git commit -m "chore: update seen_urls cache"
