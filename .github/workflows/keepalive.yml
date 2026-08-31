@@ -15,9 +15,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Empty commit to keep repo active
+      - name: Keepalive commit if repo idle >50 days
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --allow-empty -m "chore: keepalive"
-          git push
+          git pull origin main --rebase
+          LAST_COMMIT_TS=$(git log -1 --format=%ct)
+          NOW_TS=$(date +%s)
+          IDLE_DAYS=$(( (NOW_TS - LAST_COMMIT_TS) / 86400 ))
+          echo "Last commit was ${IDLE_DAYS} days ago"
+          if [ "$IDLE_DAYS" -gt 50 ]; then
+            echo "Repo idle >50 days, creating keepalive commit"
+            git commit --allow-empty -m "chore: keepalive"
+            git push
+          else
+            echo "Repo still active, no keepalive needed"
+          fi
